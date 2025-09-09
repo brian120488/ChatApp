@@ -1,23 +1,29 @@
 import { useEffect, useState } from "react";
 import { Button, FlatList, SafeAreaView, Text, TextInput } from "react-native";
 type Message = {
-  data: string;
+  message: string;
 };
 export default function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const wsUrl = "wss://3xe12c3kog.execute-api.us-east-2.amazonaws.com/production/";
 
   useEffect(() => {
-    const socket = new WebSocket("wss://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev");
+    console.log("Messages updated:", messages);
+    }, [messages]);
+
+  useEffect(() => {
+    const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
       console.log("Connected to WebSocket");
     };
 
     socket.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      setMessages((prev) => [...prev, msg]);
+      const message = JSON.parse(event.data);
+      console.log("Received:", message);
+      setMessages((prev) => [...prev, message]);
     };
 
     socket.onclose = () => console.log("Disconnected");
@@ -38,7 +44,7 @@ export default function App() {
     <SafeAreaView style={{ flex: 1, padding: 20 }}>
       <FlatList
         data={messages}
-        renderItem={({ item }) => <Text>{item.data}</Text>}
+        renderItem={({ item }) => <Text>{item.message}</Text>}
         keyExtractor={(_, i) => i.toString()}
       />
       <TextInput
@@ -48,6 +54,7 @@ export default function App() {
         style={{ borderWidth: 1, marginBottom: 10, padding: 8 }}
       />
       <Button title="Send" onPress={sendMessage} />
+      
     </SafeAreaView>
   );
 }
