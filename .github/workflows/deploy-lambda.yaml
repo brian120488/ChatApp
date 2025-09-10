@@ -1,4 +1,4 @@
-name: Deploy Lambda
+name: Deploy Lambda Functions
 
 on:
   push:
@@ -20,11 +20,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Zip function code
-        run: zip -r function.zip .
-
-      - name: Deploy to Lambda
+      - name: Deploy Lambda functions
         run: |
-          aws lambda update-function-code \
-            --function-name my-function-name \
-            --zip-file fileb://function.zip
+          for dir in lambda/*/ ; do
+            if [ -d "$dir" ]; then
+              echo "Deploying Lambda in folder $dir"
+              cd "$dir"
+              zip -r function.zip . 
+              function_name=$(basename "$dir")
+              aws lambda update-function-code \
+                --function-name "$function_name" \
+                --zip-file fileb://function.zip
+              cd ../../
+            fi
+          done
