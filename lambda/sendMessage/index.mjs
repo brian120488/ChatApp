@@ -11,7 +11,6 @@ import {
 const ddb = new DynamoDBClient({ region: "us-east-2" });
 
 export const handler = async (event) => {
-  // test
   const domain = event.requestContext.domainName;
   const stage = event.requestContext.stage;
   const connectionId = event.requestContext.connectionId;
