@@ -1,8 +1,12 @@
+import { ChatBubble } from "@/components/ui/ChatBubble";
 import { useEffect, useState } from "react";
-import { Button, FlatList, SafeAreaView, Text, TextInput } from "react-native";
+import { Button, FlatList, SafeAreaView, TextInput } from "react-native";
+
 type Message = {
   message: string;
+  isMe: boolean;
 };
+
 export default function App() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -23,7 +27,7 @@ export default function App() {
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       console.log("Received:", message);
-      setMessages((prev) => [...prev, message]);
+      setMessages((prev) => [...prev, { ...message, isMe: false }]);
     };
 
     socket.onclose = () => console.log("Disconnected");
@@ -36,6 +40,7 @@ export default function App() {
   const sendMessage = () => {
     if (ws && input.trim()) {
       ws.send(JSON.stringify({ action: "sendMessage", data: input }));
+      setMessages((prev) => [...prev, { message: input, isMe: true }]);
       setInput("");
     }
   };
@@ -44,7 +49,7 @@ export default function App() {
     <SafeAreaView style={{ flex: 1, padding: 20 }}>
       <FlatList
         data={messages}
-        renderItem={({ item }) => <Text>{item.message}</Text>}
+        renderItem={({ item }) => <ChatBubble isMe={item.isMe}>{item.message}</ChatBubble>}
         keyExtractor={(_, i) => i.toString()}
       />
       <TextInput
